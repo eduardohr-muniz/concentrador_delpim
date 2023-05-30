@@ -119,9 +119,9 @@ Tags:
                                 children: [
                                   Expanded(
                                       flex: 5,
-                                      child: DTextFormFild(
+                                      child: CwTextFild(
                                         controller: descricaoEtiquetaEC,
-                                        label: const Text("DESCRIÇÃO"),
+                                        label: "DESCRIÇÃO",
                                       )),
                                 ],
                               ),

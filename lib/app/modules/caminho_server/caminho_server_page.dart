@@ -4,9 +4,11 @@ import 'package:concentrador_delpim/app/core/controller/controller_websocket.dar
 import 'package:concentrador_delpim/app/core/ui/extensions/color_ex.dart';
 import 'package:concentrador_delpim/app/core/ui/widgets/button_header.dart';
 import 'package:concentrador_delpim/app/core/ui/widgets/container_eleveted.dart';
-import 'package:concentrador_delpim/app/core/ui/widgets/d_text_form_fild.dart';
 import 'package:concentrador_delpim/app/core/ui/widgets/windown.dart';
 import 'package:concentrador_delpim/app/modules/caminho_server/controller_caminho_server.dart';
+import 'package:concentrador_delpim/app/modules/caminho_server/widgets/cnpj_a_bloqueio.dart';
+import 'package:concentrador_delpim/app/modules/caminho_server/widgets/historico_log_a_restaurar.dart';
+import 'package:concentrador_delpim/app/modules/caminho_server/widgets/pos_a_mobility_pos.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -60,49 +62,11 @@ class CaminhoServerPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                  flex: 3,
-                                  child: DTextFormFild(
-                                    controller: controller.pathHistoricoLogEC,
-                                    label: const Text("PATH HISTORICO_LOG"),
-                                  )),
-                              const SizedBox(width: 50),
-                              Expanded(
-                                  flex: 3,
-                                  child: DTextFormFild(
-                                      controller: controller.pathPdvCadEC, label: const Text("PATH PDV_CAD"))),
-                              Expanded(
-                                  flex: 0,
-                                  child: IconButton(
-                                      tooltip: "Salvar",
-                                      onPressed: () {
-                                        controller.salvarPaths();
-                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                            content: Text("SALVO COM SUCESSO!"), backgroundColor: Colors.green));
-                                      },
-                                      icon: const Icon(Icons.save, color: ColorEx.primary))),
-                              Expanded(
-                                  flex: 0,
-                                  child: IconButton(
-                                      tooltip: "Restaurar Paths",
-                                      onPressed: () {
-                                        controller.restaurarPaths();
-                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                            content: Text("PATHS RESTAURADOS"), backgroundColor: Colors.green));
-                                      },
-                                      icon: const Icon(Icons.restore, color: ColorEx.primary))),
-                            ],
-                          ),
+                          HistoricoLogARestaurar(controller: controller),
                           const SizedBox(height: 20),
-                          SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.39,
-                              child: TextFormField(
-                                controller: controller.cnpjClienteEC,
-                                decoration: const InputDecoration(labelText: "CNPJ DO CLIENTE"),
-                              ))
+                          CnpjABloqueio(controller: controller),
+                          const SizedBox(height: 20),
+                          PosAMobilityPos(controller: controller),
                         ],
                       ),
                     ),

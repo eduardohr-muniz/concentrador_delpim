@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class DTextFormFild extends StatelessWidget {
+class CwTextFild extends StatelessWidget {
   final TextEditingController? controller;
-  final Widget label;
-  const DTextFormFild({
+  final String label;
+  const CwTextFild({
     Key? key,
     required this.controller,
     required this.label,
@@ -14,7 +14,7 @@ class DTextFormFild extends StatelessWidget {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        label: label,
+        labelText: label,
       ),
     );
   }

@@ -17,11 +17,17 @@ class ControllerCaminhoServer {
   final pathHistoricoLogEC = TextEditingController();
   final pathPdvCadEC = TextEditingController();
   final cnpjClienteEC = TextEditingController();
+  final pathErpGestao = TextEditingController();
+  final pathsPosEC = TextEditingController();
+  final pathsMobilityPosEC = TextEditingController();
 
   Future<void> init() async {
     pathHistoricoLogEC.text = await controllerProdutos.getPathTxt("txt");
     pathPdvCadEC.text = await controllerProdutos.getPathPdvCad("pdvCad");
     cnpjClienteEC.text = await controllerWebSocket.getSlug();
+    pathErpGestao.text = await controllerWebSocket.controllerBloqueio.getPreferencesString("erpGestao");
+    pathsPosEC.text = await controllerWebSocket.controllerBloqueio.getPreferencesString("pos");
+    pathsMobilityPosEC.text = await controllerWebSocket.controllerBloqueio.getPreferencesString("mobilityPos");
   }
 
   restaurarPaths() {
@@ -34,6 +40,9 @@ class ControllerCaminhoServer {
   }
 
   salvarPaths() {
+    controllerWebSocket.controllerBloqueio.setPreferencesString("erpGestao", pathErpGestao.text);
+    controllerWebSocket.controllerBloqueio.setPreferencesString("pos", pathsPosEC.text);
+    controllerWebSocket.controllerBloqueio.setPreferencesString("mobilityPos", pathsMobilityPosEC.text);
     controllerProdutos.savePathPdvCad(pathPdvCadEC.text);
     controllerProdutos.savePathTxt(pathHistoricoLogEC.text);
     controllerWebSocket.addSlug(cnpjClienteEC.text);

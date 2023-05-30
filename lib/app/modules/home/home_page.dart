@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:concentrador_delpim/app/core/controller/controller_impressao.dart';
 import 'package:concentrador_delpim/app/core/controller/controller_produtos.dart';
 import 'package:concentrador_delpim/app/core/controller/controller_contagem_impressoes.dart';
+import 'package:concentrador_delpim/app/core/controller/controller_websocket.dart';
+import 'package:concentrador_delpim/app/core/controller/messages.dart';
 import 'package:concentrador_delpim/app/models/produto.dart';
 import 'package:concentrador_delpim/app/models/modelo_impressao.dart';
 import 'package:concentrador_delpim/app/modules/home/widgets/dialog_password.dart';
@@ -15,27 +17,26 @@ import '../../core/controller/controller_web_hook.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  final produtosController = ControllerProdutos();
+  final serviceController = ServiceController();
+  final searchProdutoFC = FocusNode();
+  final searchProdutoEC = TextEditingController();
+  late final Messages messages;
+  List<Produto> produtos = [];
+  List<ModeloImpressao> produtosLista = [];
+  Timer? searchTimer;
+
   snackBProdutoErro() {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text("Produto não encontrado"),
       backgroundColor: Colors.amber,
     ));
   }
-
-  final produtosController = ControllerProdutos();
-  final serviceController = ServiceController();
-  final searchProdutoFC = FocusNode();
-
-  List<ModeloImpressao> produtosLista = [];
-  final searchProdutoEC = TextEditingController();
-  Timer? searchTimer;
-  List<Produto> produtos = [];
 
   void startSearch() {
     searchTimer = Timer(const Duration(milliseconds: 300), () async {
@@ -52,6 +53,20 @@ class _HomePageState extends State<HomePage> {
         }
       }
     });
+  }
+
+  @override
+  void initState() {
+    messages = Messages.of(context);
+    ControllerWebSocket controllerWS = context.read<ControllerWebSocket>();
+    controllerWS.addListener(() {
+      if (controllerWS.isConectado != null && controllerWS.isConectado == true) {
+        messages.showSucess("USUARIO CONECTADO COM SUCESSO");
+      } else if (controllerWS.isConectado != null && controllerWS.isConectado == false) {
+        messages.showError("ERRO INTERNET INSTAVEL CHECK SUA CONEXÃO");
+      }
+    });
+    super.initState();
   }
 
   void cancelSearchTimer() {

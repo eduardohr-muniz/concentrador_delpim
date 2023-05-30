@@ -1,17 +1,19 @@
 import 'dart:async';
-import 'package:concentrador_delpim/app/core/controller/messages.dart';
+import 'package:concentrador_delpim/app/core/controller/controller_bloqueio.dart';
 import 'package:concentrador_delpim/app/models/solicitacao.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/io.dart';
 
-class ControllerWebSocket {
-  BuildContext context;
-  ControllerWebSocket({required this.context});
-
+class ControllerWebSocket extends ChangeNotifier {
+  ControllerBloqueio controllerBloqueio;
+  ControllerWebSocket({required this.controllerBloqueio}) {
+    init();
+  }
   late IOWebSocketChannel channel;
   String slugPadrao = "Insira o cnpj do cliente";
-  String ipPort = "";
+  String ipPort = "95.111.254.20:2323";
+  bool? isConectado;
 
   State<StatefulWidget> createState() {
     throw UnimplementedError();
@@ -27,32 +29,38 @@ class ControllerWebSocket {
     return prefs.getString('slug') ?? slugPadrao;
   }
 
-  Future<String> getIpPort() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('ipPort') ?? "144.91.88.240:1769";
-  }
+  // Future<String> getIpPort() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getString('ipPort') ?? "95.111.254.20:2323";
+  // }
 
   Future<void> addIpPort(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("IpPort", value);
   }
 
-  void init(String slug) {
-    initConnection(slug);
-    broadcastNotifications(slug);
+  Future<void> init() async {
+    String slug = await getSlug();
+    if (slug != "") {
+      initConnection(slug);
+    }
+    // broadcastNotifications(slug);
   }
 
   Future initConnection(String slug) async {
     // print("--------initConnection---------");
+
     if (slug != slugPadrao) {
-      ipPort = await getIpPort();
+      // ipPort = await getIpPort();
       channel = IOWebSocketChannel.connect("ws://$ipPort", pingInterval: const Duration(seconds: 5));
       Future.delayed(const Duration(seconds: 1), () {
         // print("--------ENVIANDO ID---------");
-        channel.sink.add('{"idSave": "$slug"}');
+        channel.sink.add('{"slug": "$slug"}');
         broadcastNotifications(slug);
         var conectado = channel.innerWebSocket;
-        conectado != null ? Messages.of(context).showSucess("CONECTADO COM SUCESSO") : null;
+        conectado != null ? isConectado = true : null;
+        notifyListeners();
+        // Messages.of(context).showSucess("CONECTADO COM SUCESSO") : null;
       });
     }
   }
@@ -62,22 +70,24 @@ class ControllerWebSocket {
       (event) async {
         var solicitacao = Solicitacao.fromJson(event);
         if (solicitacao.bloquear == true) {
-          //TODO Implementar logica de bloqueio
+          controllerBloqueio.bloquear();
         } else {
-          //TODO Implementar Logica de Desbloqueio
+          controllerBloqueio.desbloquear();
         }
       },
       onError: (_) async {
         // print("onError");
         //Uma mensagem com erro
-        Messages.of(context).showError("INTERNET INSTÁVEL TENTANDO RECONECTAR ⚠️");
+        isConectado = false;
         _retryConnectio(slug);
+        notifyListeners();
       },
       onDone: () async {
         // print("onDone");
-        Messages.of(context).showError("INTERNET INSTÁVEL TENTANDO RECONECTAR ⚠️");
+        isConectado = false;
         //Quando fecha a conexão
         _retryConnectio(slug);
+        notifyListeners();
       },
       cancelOnError: true,
     );
